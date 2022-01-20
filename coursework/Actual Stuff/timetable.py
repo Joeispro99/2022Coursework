@@ -45,6 +45,7 @@ def createTimetable():
     for i in dictionaryOfStudyTimeEveryDayInMinutes:
         totalStudyTime += dictionaryOfStudyTimeEveryDayInMinutes[i]
     studyTimePerSession = totalStudyTime/sumOfSessions
+    studyTimePerSession = int(studyTimePerSession)
     prioritySort = [""] * len(dictionaryOfSubjectsAndPriority)
     maxPriority = minPriority = 0
     for i in dictionaryOfSubjectsAndPriority:
@@ -55,9 +56,28 @@ def createTimetable():
     for i in range(maxPriority):
         prioritySort2 += prioritySort
         prioritySort.pop(-1)
-    print(prioritySort2)
     timetableLayout = {'Monday': "", 'Tuesday': "", 'Wednesday': "", 'Thursday': "", 'Friday': "", 'Saturday': "", 'Sunday': ""}
     #LayoutFormat: Subject/Duration, Subject/Duration
     excessTime = 0
     remainingTime = 0
     # if excess time > studyTimePerSession, remainingTime = studyTimePerSession - excessTime
+    for i in dictionaryOfStudyTimeEveryDayInMinutes:
+        while dictionaryOfStudyTimeEveryDayInMinutes[i] > 0:
+            if remainingTime > dictionaryOfStudyTimeEveryDayInMinutes[i]:
+                timetableLayout[i] += prioritySort2[0] + "/" + str(dictionaryOfStudyTimeEveryDayInMinutes[i]) + " "
+                remainingTime -= dictionaryOfStudyTimeEveryDayInMinutes[i]
+                dictionaryOfStudyTimeEveryDayInMinutes[i] = 0
+                break
+            if remainingTime > 0:
+                dictionaryOfStudyTimeEveryDayInMinutes[i] = dictionaryOfStudyTimeEveryDayInMinutes[i] - remainingTime
+                timetableLayout[i] += prioritySort2[0] + "/" + str(remainingTime) + " "
+                remainingTime = 0
+                prioritySort2.pop(0)
+            if dictionaryOfStudyTimeEveryDayInMinutes[i] < studyTimePerSession:
+                remainingTime = studyTimePerSession - dictionaryOfStudyTimeEveryDayInMinutes[i]
+                timetableLayout[i] += prioritySort2[0] + "/" + str(dictionaryOfStudyTimeEveryDayInMinutes[i]) + " "
+                dictionaryOfStudyTimeEveryDayInMinutes[i] = 0
+            else:
+                dictionaryOfStudyTimeEveryDayInMinutes[i] = dictionaryOfStudyTimeEveryDayInMinutes[i] - studyTimePerSession
+                timetableLayout[i] += prioritySort2[0] + "/" + str(studyTimePerSession) + " "
+                prioritySort2.pop(0)
