@@ -1,10 +1,9 @@
 from tkinter import *
-from tkinter import ttk
-from PIL import ImageTk, Image
 
 dictionaryOfSubjectsAndPriority = {}
 dictionaryOfStudyTimeEveryDayInMinutes = {'Monday': 0, 'Tuesday': 0, 'Wednesday': 0, 'Thursday': 0, 'Friday': 0, 'Saturday': 0, 'Sunday': 0}
-timetableImage = None
+
+timetableLayout = {'Monday': "", 'Tuesday': "", 'Wednesday': "", 'Thursday': "", 'Friday': "", 'Saturday': "", 'Sunday': ""}
 
 #DUMMY DATA
 dictionaryOfSubjectsAndPriority = {'English': 2, 'Chinese': 1, 'Chemistry': 3, 'Computing': 4}
@@ -38,6 +37,7 @@ def createTimetable():
     #slider - Study Time for each Study Session
     #slider - Rest Time for each Study Session
     #pack_forget to hide and pack to show
+    asianmode = False
     sumOfSessions = 0
     for i in dictionaryOfSubjectsAndPriority:
         sumOfSessions += dictionaryOfSubjectsAndPriority[i]
@@ -46,6 +46,17 @@ def createTimetable():
         totalStudyTime += dictionaryOfStudyTimeEveryDayInMinutes[i]
     studyTimePerSession = totalStudyTime/sumOfSessions
     studyTimePerSession = int(studyTimePerSession)
+    # round down to nearest 5 to give rest time
+    # if < 10 get rid and do another day
+    # tell them there's rest time
+    # split rest time into break time during subjects
+    # if rest break < 5 or subjects < 1
+    # if rest break < 5, add break if option to not be rigid ticked
+    # Asian Mode: no rest break, no rounding down
+    # additional feature:
+    # multiple scheudles stored:
+    # home schedule, holiday schedule
+    # dark mode
     prioritySort = [""] * len(dictionaryOfSubjectsAndPriority)
     maxPriority = minPriority = 0
     for i in dictionaryOfSubjectsAndPriority:
@@ -56,7 +67,6 @@ def createTimetable():
     for i in range(maxPriority):
         prioritySort2 += prioritySort
         prioritySort.pop(-1)
-    timetableLayout = {'Monday': "", 'Tuesday': "", 'Wednesday': "", 'Thursday': "", 'Friday': "", 'Saturday': "", 'Sunday': ""}
     #LayoutFormat: Subject/Duration, Subject/Duration
     excessTime = 0
     remainingTime = 0
@@ -81,3 +91,11 @@ def createTimetable():
                 dictionaryOfStudyTimeEveryDayInMinutes[i] = dictionaryOfStudyTimeEveryDayInMinutes[i] - studyTimePerSession
                 timetableLayout[i] += prioritySort2[0] + "/" + str(studyTimePerSession) + " "
                 prioritySort2.pop(0)
+        if not asianmode:
+            for i in timetableLayout:
+                scheduleForTheDay = timetableLayout[i].split(" ")
+                for i in scheduleForTheDay:
+                    print(scheduleForTheDay.split("/"))
+    # note:
+    # most priority goes to most time
+    print(timetableLayout)

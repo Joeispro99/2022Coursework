@@ -1,8 +1,9 @@
 # This is a sample Python script.
+import random
 from tkinter import *
 from tkinter import ttk
-from timetable import createTimetable, timetableImage
-import time
+from timetable import createTimetable, timetableLayout
+import random
 from PIL import ImageTk, Image
 
 root = Tk()
@@ -13,7 +14,6 @@ screen_height = root.winfo_screenheight()
 
 root.geometry(str(screen_width) + "x" + str(screen_height))
 
-timetableset = False
 notebook = ttk.Notebook(root)
 notebook.pack(ipadx=screen_width,ipady=screen_height)
 
@@ -24,14 +24,22 @@ chatframe = LabelFrame(notebook, text="")
 notebook.add(timetableframe, text="Sections")
 notebook.add(chatframe, text="Chat with Teachers")
 
+tip = StringVar()
+tips = ["hi", "bye", "you are dumb", "slacking again?"]
+def tip_loop():
+    tip.set(tips[random.randint(0,len(tips)-1)])
+    root.after(5000, tip_loop)
+tip_loop()
+tiplabel = Label(timetableframe, textvariable=tip)
+tiplabel.pack(anchor=S+E, side=BOTTOM)
+
 def reloadTimetable():
-    print(timetableImage)
-    if timetableImage == None:
+    if timetableLayout == {'Monday': "", 'Tuesday': "", 'Wednesday': "", 'Thursday': "", 'Friday': "", 'Saturday': "", 'Sunday': ""}:
         label2 = Label(timetableframe, text="You have not created a schedule yet!")
         label2.pack()
         root.after(3000, label2.pack_forget)
 
-if not timetableset:
+if timetableLayout == {'Monday': "", 'Tuesday': "", 'Wednesday': "", 'Thursday': "", 'Friday': "", 'Saturday': "", 'Sunday': ""}:
     nolabel = Label(timetableframe, text="You have not created a schedule")
     nolabel.pack()
     createbtn = Button(timetableframe, text="Create Schedule", command=createTimetable)
