@@ -1,17 +1,22 @@
 from tkinter import *
 
+timetableLayout = {'Monday': "", 'Tuesday': "", 'Wednesday': "", 'Thursday': "", 'Friday': "", 'Saturday': "",
+                   'Sunday': ""}
+
+'''
+
 dictionaryOfSubjectsAndPriority = {}
 # dictionaryOfStudyTimeEveryDayInMinutes = {'Monday': 0, 'Tuesday': 0, 'Wednesday': 0, 'Thursday': 0, 'Friday': 0, 'Saturday': 0, 'Sunday': 0}
 
-timetableLayout = {'Monday': "", 'Tuesday': "", 'Wednesday': "", 'Thursday': "", 'Friday': "", 'Saturday': "",
-                   'Sunday': ""}
+
 
 # DUMMY DATA
 dictionaryOfSubjectsAndPriority = {'English': 2, 'Chinese': 1, 'Chemistry': 3, 'Computing': 4}
 # 4 is highest priority, 1 is lowest priority
 dictionaryOfStudyTimeEveryDayInMinutes = {'Monday': 60, 'Tuesday': 50, 'Wednesday': 40, 'Thursday': 10, 'Friday': 100,
                                           'Saturday': 60, 'Sunday': 90}
-studyTimeDict = dictionaryOfStudyTimeEveryDayInMinutes.copy()
+
+'''
 
 
 # how it works:
@@ -73,62 +78,7 @@ def factorial_add(n):
     return total
 
 
-def createTimetable(asianValue):
-    top = Toplevel()
-    top.title = "Create Timetable"
-    top.geometry("400x400")
-
-    # inputs:
-    # slider how many subject
-    # for loop to iterate through subjects
-    # text field - Subject
-    # text field - Priority
-    # button - Submit
-    # slider - Study Time for each Study Session
-    # slider - Rest Time for each Study Session
-    # pack_forget to hide and pack to show
-
-    def timeTableInputs():
-        subjectSlider = Scale(top, from_=1, to=10, orient=HORIZONTAL)
-        subjectSlider.pack()
-        submitButton = Button(top, text="Submit Subjects", command=lambda: submitSlider(subjectSlider.get()))
-        submitButton.pack()
-
-        def submitSlider(value):
-            submitButton.pack_forget()
-            subjectSlider.pack_forget()
-            text_field_array = []
-            for i in range(value):
-                e = Entry(top, width=50)
-                e.insert(0, "Enter Subject " + str(i + 1) + ": ")
-                text_field_array.append(e)
-                e.pack()
-
-            def submitSubjectsAndPriority():
-                dictOfSubjectsAndPriority = {}
-                for i in text_field_array:
-                    dictOfSubjectsAndPriority[(i.get().split(":")[-1][1:])] = ""
-                for i in text_field_array:
-                    j = i.get().split(":")[-1][1:]
-                    i.delete(0, 'end')
-                    i.insert(0, "Enter Priority for Subject " + j + ": ")
-                submitButton2.pack_forget()
-
-                def submitSubjectsAndPriorityAgain():
-                    for j in dictOfSubjectsAndPriority:
-                        print(j)
-                        dictOfSubjectsAndPriority[j] = (
-                        text_field_array[list(dictOfSubjectsAndPriority.keys()).index(j)].get().split(":")[-1][1:])
-                    print(dictOfSubjectsAndPriority)
-
-                submitButton3 = Button(top, text="Submit Priority", command=submitSubjectsAndPriorityAgain)
-                submitButton3.pack()
-
-            submitButton2 = Button(top, text="Submit All Subjects", command=submitSubjectsAndPriority)
-            submitButton2.pack()
-
-    timeTableInputs()
-
+def applyItAll(dictionaryOfSubjectsAndPriority, dictionaryOfStudyTimeEveryDayInMinutes, asianValue):
     sumOfSessions = 0
     for i in dictionaryOfSubjectsAndPriority:
         sumOfSessions += dictionaryOfSubjectsAndPriority[i]
@@ -173,22 +123,18 @@ def createTimetable(asianValue):
                 dictionaryOfStudyTimeEveryDayInMinutes[i] = dictionaryOfStudyTimeEveryDayInMinutes[i] - remainingTime
                 timetableLayout[i] += prioritySort2[0] + "/" + str(remainingTime) + " "
                 remainingTime = 0
-                prioritySort2.pop(0)
+                prioritySort2.pop(0) # source of error
+            if prioritySort2 == []:
+                break
             if dictionaryOfStudyTimeEveryDayInMinutes[i] < studyTimePerSession:
                 remainingTime = studyTimePerSession - dictionaryOfStudyTimeEveryDayInMinutes[i]
                 timetableLayout[i] += prioritySort2[0] + "/" + str(dictionaryOfStudyTimeEveryDayInMinutes[i]) + " "
                 dictionaryOfStudyTimeEveryDayInMinutes[i] = 0
             else:
-                dictionaryOfStudyTimeEveryDayInMinutes[i] = dictionaryOfStudyTimeEveryDayInMinutes[
-                                                                i] - studyTimePerSession
+                dictionaryOfStudyTimeEveryDayInMinutes[i] = dictionaryOfStudyTimeEveryDayInMinutes[i] - studyTimePerSession
                 timetableLayout[i] += prioritySort2[0] + "/" + str(studyTimePerSession) + " "
-                prioritySort2.pop(0)
-        if not asianValue:
-            for i in timetableLayout:
-                scheduleForTheDay = timetableLayout[i].split(" ")
-                for i in scheduleForTheDay:
-                    pass
-    if asianValue:
+                prioritySort2.pop(0) # another source
+    if not asianValue:
         for days in timetableLayout:
             counter = 1
             tempSchedule = timetableLayout[days]
@@ -199,8 +145,98 @@ def createTimetable(asianValue):
                     studyTime = timeRounder(studyTime)[0]
                     tempSchedule[counter] = str(studyTime)
                     counter += 2
-            timetableLayout[days] = (breakTimeGiver(zeroRemover(tempSchedule), studyTimeDict[days]))
+            timetableLayout[days] = (breakTimeGiver(zeroRemover(tempSchedule), dictionaryOfStudyTimeEveryDayInMinutes[days]))
 
     # note:
     # most priority goes to most time
+    print(timetableLayout)
     return timetableLayout
+
+
+def createTimetable():
+    top = Toplevel()
+    top.title = "Create Timetable"
+    top.geometry("400x400")
+
+    #applyItAll(dictionaryOfSubjectsAndPriority, dictionaryOfStudyTimeEveryDayInMinutes, False)
+
+    # inputs:
+    # slider how many subject
+    # for loop to iterate through subjects
+    # text field - Subject
+    # text field - Priority
+    # button - Submit
+    # slider - Study Time for each Study Session
+    # slider - Rest Time for each Study Session
+    # pack_forget to hide and pack to show
+
+    def timeTableInputs():
+        subjectSlider = Scale(top, from_=1, to=10, orient=HORIZONTAL)
+        subjectSlider.pack()
+        submitButton = Button(top, text="Submit Subjects", command=lambda: submitSlider(subjectSlider.get()))
+        submitButton.pack()
+
+        def submitSlider(value):
+            submitButton.pack_forget()
+            subjectSlider.pack_forget()
+            text_field_array = []
+            for i in range(value):
+                e = Entry(top, width=50)
+                e.insert(0, "Enter Subject " + str(i + 1) + ": ")
+                text_field_array.append(e)
+                e.pack()
+
+            def submitSubjectsAndPriority():
+                dictOfSubjectsAndPriority = {}
+                for i in text_field_array:
+                    dictOfSubjectsAndPriority[(i.get().split(":")[-1][1:])] = ""
+                for i in text_field_array:
+                    j = i.get().split(":")[-1][1:]
+                    i.delete(0, 'end')
+                    i.insert(0, "Enter Priority for Subject " + j + ": ")
+                submitButton2.pack_forget()
+
+                def submitSubjectsAndPriorityAgain():
+                    for j in dictOfSubjectsAndPriority:
+                        dictOfSubjectsAndPriority[j] = int((text_field_array[list(dictOfSubjectsAndPriority.keys()).index(j)].get().split(":")[-1][1:]))
+                    submitButton3.pack_forget()
+                    for i in text_field_array:
+                        i.pack_forget()
+
+                    dayArray = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+                    textFieldArray = []
+                    for i in dayArray:
+                        e = Entry(top, width=50)
+                        e.insert(0, "Time available for " + i + ": ")
+                        textFieldArray.append(e)
+                        e.pack()
+
+
+                    asianValueAsAnInt = IntVar()
+                    asianmode = Checkbutton(top, text="ASIAN MODE ACTIVATE?!", variable=asianValueAsAnInt)
+                    asianmode.pack()
+
+                    def TimeEveryDay():
+                        #studyTimePerSession = studyTextField.get()
+                        dictOfStudyTimeEveryDayInMinutes = {'Monday': 0, 'Tuesday': 0, 'Wednesday': 0, 'Thursday': 0, 'Friday': 0, 'Saturday': 0, 'Sunday': 0}
+                        asianValue = asianValueAsAnInt.get() == 1
+                        for i in range(len(textFieldArray)):
+                            dictOfStudyTimeEveryDayInMinutes[dayArray[i]] = int((textFieldArray[i].get()).split(":")[-1][1:])
+                        asianmode.pack_forget()
+                        for i in textFieldArray:
+                            i.pack_forget()
+                        submitButton4.pack_forget()
+                        applyItAll(dictOfSubjectsAndPriority, dictOfStudyTimeEveryDayInMinutes, asianValue)
+
+                    submitButton4 = Button(top, text="Submit Study Time and Asian Mode!!!!", command=TimeEveryDay)
+                    submitButton4.pack()
+
+
+                submitButton3 = Button(top, text="Submit Priority", command=submitSubjectsAndPriorityAgain)
+                submitButton3.pack()
+
+            submitButton2 = Button(top, text="Submit All Subjects", command=submitSubjectsAndPriority)
+            submitButton2.pack()
+
+    timeTableInputs()
+

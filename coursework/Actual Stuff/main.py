@@ -42,7 +42,7 @@ def reloadTimetable():
 if timetableLayout == {'Monday': "", 'Tuesday': "", 'Wednesday': "", 'Thursday': "", 'Friday': "", 'Saturday': "", 'Sunday': ""}:
     nolabel = Label(timetableframe, text="You have not created a schedule")
     nolabel.pack()
-    createbtn = Button(timetableframe, text="Create Schedule", command=lambda: createTimetable(True))
+    createbtn = Button(timetableframe, text="Create Schedule", command=lambda: createTimetable())
     createbtn.pack()
     reloadbtn = Button(timetableframe, text="Reload Schedule", command=reloadTimetable)
     reloadbtn.pack()
