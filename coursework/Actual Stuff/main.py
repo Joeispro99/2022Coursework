@@ -4,6 +4,7 @@ from tkinter import *
 from tkinter import ttk
 from timetable import createTimetable, timetableLayout
 import random
+from tips import tips
 from PIL import ImageTk, Image
 
 root = Tk()
@@ -25,7 +26,6 @@ notebook.add(timetableframe, text="Sections")
 notebook.add(chatframe, text="Chat with Teachers")
 
 tip = StringVar()
-tips = ["hi", "bye", "you are dumb", "slacking again?"]
 def tip_loop():
     tip.set(tips[random.randint(0,len(tips)-1)])
     root.after(5000, tip_loop)
@@ -42,7 +42,7 @@ def reloadTimetable():
 if timetableLayout == {'Monday': "", 'Tuesday': "", 'Wednesday': "", 'Thursday': "", 'Friday': "", 'Saturday': "", 'Sunday': ""}:
     nolabel = Label(timetableframe, text="You have not created a schedule")
     nolabel.pack()
-    createbtn = Button(timetableframe, text="Create Schedule", command=createTimetable)
+    createbtn = Button(timetableframe, text="Create Schedule", command=lambda: createTimetable(True))
     createbtn.pack()
     reloadbtn = Button(timetableframe, text="Reload Schedule", command=reloadTimetable)
     reloadbtn.pack()

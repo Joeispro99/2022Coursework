@@ -17,4 +17,4 @@ tips = ["You should create a schedule", #1
         "Joe was here", #17
         "ZB was here", #18
         "Abdullah was not here :(", #19
-        "Water your plants!" #20]
+        "Water your plants!"] #20
