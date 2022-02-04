@@ -3,6 +3,8 @@ import random
 from tkinter import *
 from tkinter import ttk
 from timetable import createTimetable, timetableLayout
+import time
+import threading
 import random
 from tips import tips
 from PIL import ImageTk, Image
@@ -27,9 +29,10 @@ notebook.add(chatframe, text="Chat with Teachers")
 
 tip = StringVar()
 def tip_loop():
-    tip.set(tips[random.randint(0,len(tips)-1)])
-    root.after(5000, tip_loop)
-tip_loop()
+    while True:
+        tip.set(tips[random.randint(0, len(tips) - 1)])
+        time.sleep(5)
+threading.Thread(target=tip_loop).start()
 tiplabel = Label(timetableframe, textvariable=tip)
 tiplabel.pack(anchor=S+E, side=BOTTOM)
 

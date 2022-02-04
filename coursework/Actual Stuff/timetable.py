@@ -1,4 +1,6 @@
 from tkinter import *
+import threading
+import time
 
 timetableLayout = {'Monday': "", 'Tuesday': "", 'Wednesday': "", 'Thursday': "", 'Friday': "", 'Saturday': "",
                    'Sunday': ""}
@@ -79,6 +81,7 @@ def factorial_add(n):
 
 
 def applyItAll(dictionaryOfSubjectsAndPriority, dictionaryOfStudyTimeEveryDayInMinutes, asianValue):
+    studyTimeDict = dictionaryOfStudyTimeEveryDayInMinutes.copy()
     sumOfSessions = 0
     for i in dictionaryOfSubjectsAndPriority:
         sumOfSessions += dictionaryOfSubjectsAndPriority[i]
@@ -145,15 +148,17 @@ def applyItAll(dictionaryOfSubjectsAndPriority, dictionaryOfStudyTimeEveryDayInM
                     studyTime = timeRounder(studyTime)[0]
                     tempSchedule[counter] = str(studyTime)
                     counter += 2
-            timetableLayout[days] = (breakTimeGiver(zeroRemover(tempSchedule), dictionaryOfStudyTimeEveryDayInMinutes[days]))
+            timetableLayout[days] = (breakTimeGiver(zeroRemover(tempSchedule), studyTimeDict[days]))
 
     # note:
     # most priority goes to most time
     print(timetableLayout)
+    returnToHome()
     return timetableLayout
 
 
 def createTimetable():
+    global top
     top = Toplevel()
     top.title = "Create Timetable"
     top.geometry("400x400")
@@ -239,4 +244,15 @@ def createTimetable():
             submitButton2.pack()
 
     timeTableInputs()
+
+def returnToHome():
+    byeLabel = Label(top, text="This window will be closed in 3")
+    byeLabel.pack()
+    def slowlyDisappear():
+        for i in range(1,5):
+            byeLabel.config(text="This window will be closed in " + str(4-i))
+            time.sleep(1)
+        top.destroy()
+    threading.Thread(target=slowlyDisappear).start()
+
 
