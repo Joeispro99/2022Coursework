@@ -176,14 +176,21 @@ def createTimetable():
     # pack_forget to hide and pack to show
 
     def timeTableInputs():
+        sliderLabel = Label(top, text="Use the slider to select the number of subjects!")
+        sliderLabel.pack()
         subjectSlider = Scale(top, from_=1, to=10, orient=HORIZONTAL)
         subjectSlider.pack()
         submitButton = Button(top, text="Submit Subjects", command=lambda: submitSlider(subjectSlider.get()))
         submitButton.pack()
 
         def submitSlider(value):
+            sliderLabel.pack_forget()
             submitButton.pack_forget()
             subjectSlider.pack_forget()
+
+            sliderLabel2 = Label(top, text="Use the label to enter the name of the subjects!")
+            sliderLabel2.pack()
+
             text_field_array = []
             for i in range(value):
                 e = Entry(top, width=50)
@@ -192,7 +199,12 @@ def createTimetable():
                 e.pack()
 
             def submitSubjectsAndPriority():
+                sliderLabel2.pack_forget()
                 dictOfSubjectsAndPriority = {}
+
+                sliderLabel3 = Label(top, text="Use the label to enter the priority of the subjects!\n\nThe priority should be an integer,\n the higher the priority, the more sessions given for that subject.\n\nExample: English: 1, Chinese: 2\nChinese has more priority and more time is allocated for Chinese")
+                sliderLabel3.pack()
+
                 for i in text_field_array:
                     dictOfSubjectsAndPriority[(i.get().split(":")[-1][1:])] = ""
                 for i in text_field_array:
