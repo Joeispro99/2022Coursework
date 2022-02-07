@@ -70,7 +70,21 @@ def breakTimeGiver(schdNoBreak, studyTimeToday):
     formattedSchedule = formattedSchedule.strip()
     formattedSchedule = formattedSchedule.replace(" ", " Breaktime/{} ".format(int(breaktimeCalculation)))
     return (formattedSchedule)
-
+  
+def outputTimetable(ttb):
+    for i in ttb:
+        outputStr = ""
+        counterA = 0
+        counterB = 1
+        print("\n"+i)
+        tempList = ttb[i].strip().replace(" ","/").split("/")
+        for i in range(int(len(tempList)/2)):
+            if tempList[counterA] != "Breaktime":
+                print("Subject: "+tempList[counterA]+" | Duration: "+tempList[counterB]+" mins")
+            else:
+                print("Take a short break for {} minutes! (You've earned it!)".format(tempList[counterB]))
+            counterA += 2
+            counterB += 2
 
 def factorial_add(n):
     total = 0
@@ -149,6 +163,9 @@ def applyItAll(dictionaryOfSubjectsAndPriority, dictionaryOfStudyTimeEveryDayInM
                     tempSchedule[counter] = str(studyTime)
                     counter += 2
             timetableLayout[days] = (breakTimeGiver(zeroRemover(tempSchedule), studyTimeDict[days]))
+            
+    outputTimetable(timetableLayout)    
+            
 
     # note:
     # most priority goes to most time
