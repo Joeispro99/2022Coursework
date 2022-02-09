@@ -19,8 +19,6 @@ dictionaryOfStudyTimeEveryDayInMinutes = {'Monday': 60, 'Tuesday': 50, 'Wednesda
                                           'Saturday': 60, 'Sunday': 90}
 
 '''
-
-
 # how it works:
 # if time have > studytimepersession, no rest L
 # first study session shld be most priority then second then til last then repeat
@@ -70,21 +68,7 @@ def breakTimeGiver(schdNoBreak, studyTimeToday):
     formattedSchedule = formattedSchedule.strip()
     formattedSchedule = formattedSchedule.replace(" ", " Breaktime/{} ".format(int(breaktimeCalculation)))
     return (formattedSchedule)
-  
-def outputTimetable(ttb):
-    for i in ttb:
-        outputStr = ""
-        counterA = 0
-        counterB = 1
-        print("\n"+i)
-        tempList = ttb[i].strip().replace(" ","/").split("/")
-        for i in range(int(len(tempList)/2)):
-            if tempList[counterA] != "Breaktime":
-                print("Subject: "+tempList[counterA]+" | Duration: "+tempList[counterB]+" mins")
-            else:
-                print("Take a short break for {} minutes! (You've earned it!)".format(tempList[counterB]))
-            counterA += 2
-            counterB += 2
+
 
 def factorial_add(n):
     total = 0
@@ -163,13 +147,8 @@ def applyItAll(dictionaryOfSubjectsAndPriority, dictionaryOfStudyTimeEveryDayInM
                     tempSchedule[counter] = str(studyTime)
                     counter += 2
             timetableLayout[days] = (breakTimeGiver(zeroRemover(tempSchedule), studyTimeDict[days]))
-            
-    outputTimetable(timetableLayout)    
-            
-
     # note:
     # most priority goes to most time
-    print(timetableLayout)
     returnToHome()
     return timetableLayout
 
@@ -231,6 +210,7 @@ def createTimetable():
                 submitButton2.pack_forget()
 
                 def submitSubjectsAndPriorityAgain():
+                    sliderLabel3.pack_forget()
                     for j in dictOfSubjectsAndPriority:
                         dictOfSubjectsAndPriority[j] = int((text_field_array[list(dictOfSubjectsAndPriority.keys()).index(j)].get().split(":")[-1][1:]))
                     submitButton3.pack_forget()
@@ -273,6 +253,7 @@ def createTimetable():
             submitButton2.pack()
 
     timeTableInputs()
+
 
 def returnToHome():
     byeLabel = Label(top, text="This window will be closed in 3")
