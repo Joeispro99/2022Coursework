@@ -48,42 +48,128 @@ threading.Thread(target=tip_loop).start()
 tiplabel = Label(timetableframe, textvariable=tip)
 tiplabel.pack(anchor=S+E, side=BOTTOM)
 
+nolabel = Label(timetableframe, text="You have not created a schedule")
+nolabel.pack()
+createbtn = Button(timetableframe, text="Create Schedule", command=lambda: createTimetable())
+createbtn.pack()
 
 def reloadTimetable():
-    if timetableLayout == {'Monday': "", 'Tuesday': "", 'Wednesday': "", 'Thursday': "", 'Friday': "", 'Saturday': "", 'Sunday': ""}:
-        label2 = Label(timetableframe, text="You have not created a schedule yet!")
-        label2.pack()
-        root.after(3000, label2.pack_forget)
+    global timetableLayout
+    if signed_in:
+        if db.reference("/" + username + "/schedule/").get() is not None:
+            timetableLayouttemp = db.reference("/" + username + "/schedule/").get()
+            x = {}
+            for i in timetableLayouttemp:
+                x = {**x, **(db.reference("/" + username + "/schedule/" + i + "/").get())}
+            if timetableLayout != {'Monday': "", 'Tuesday': "", 'Wednesday': "", 'Thursday': "", 'Friday': "", 'Saturday': "", 'Sunday': ""}:
+                if timetableLayout != x:
+                    # delete then loop to send timetable layout
+                    db.reference("/" + username + "/schedule/").delete()
+                    for day in timetableLayout:
+                        db.reference("/" + username + "/schedule/").push({day: timetableLayout[day]})
+                    outputTimetable(timetableLayout)
+                    newSetLabel = Label(timetableframe, text="New timetable set!")
+                    newSetLabel.pack()
+                    threading.Thread(target=lambda: hide(newSetLabel, 3)).start()
+            else:
+                timetableLayout = x
+                outputTimetable(timetableLayout)
+                nolabel.pack_forget()
+                createbtn.config(text="Edit Schedule")
+                setLabel = Label(timetableframe, text="Timetable recieved from account!")
+                setLabel.pack()
+                threading.Thread(target=lambda: hide(setLabel, 3)).start()
+        else:
+            for day in timetableLayout:
+                db.reference("/" + username + "/schedule/").push({day: timetableLayout[day]})
+            outputTimetable(timetableLayout)
+            nolabel.pack_forget()
+            createbtn.config(text="Edit Schedule")
+            setLabel = Label(timetableframe, text="Timetable set and uploaded to account!")
+            setLabel.pack()
+            threading.Thread(target=lambda: hide(setLabel, 3)).start()
+
     else:
-        outputTimetable(timetableLayout)
+        if timetableLayout == {'Monday': "", 'Tuesday': "", 'Wednesday': "", 'Thursday': "", 'Friday': "", 'Saturday': "", 'Sunday': ""}:
+            label2 = Label(timetableframe, text="You have not created a schedule yet!")
+            label2.pack()
+            root.after(3000, label2.pack_forget)
+        else:
+            outputTimetable(timetableLayout)
+            nolabel.pack_forget()
+            createbtn.config(text="Edit Schedule")
+            if signed_in:
+                db.reference("/" + username + "/schedule/")
+                db.set(timetableLayout)
+            else:
+                setandTipLabel = Label(timetableframe, text="Timetable set!\nPro tip: create an account in Chat with Teachers to save your timetable!")
+                setandTipLabel.pack()
+                # threading.Thread(target=lambda: hide(setandTipLabel, 3)).start()
 
 
-def outputTimetable(ttb):
+reloadbtn = Button(timetableframe, text="Reload Schedule", command=lambda: reloadTimetable())
+reloadbtn.pack()
+
+def outputTimetable(ttb, teacher3=None):
+    outputStr = ""
     for i in ttb:
-        outputStr = ""
         counterA = 0
         counterB = 1
-        print("\n"+i)
-        tempList = ttb[i].strip().replace(" ","/").split("/")
+        outputStr += ("\n"+i) + "\n"
+        tempList = ttb[i].strip().replace(" ", "/").split("/")
         for i in range(int(len(tempList)/2)):
             if tempList[counterA] != "Breaktime":
-                print("Subject: "+tempList[counterA]+" | Duration: "+tempList[counterB]+" mins")
+                outputStr += ("Subject: "+tempList[counterA]+" | Duration: "+tempList[counterB]+" mins") + "\n"
             else:
-                print("Take a short break for {} minutes! (You've earned it!)".format(tempList[counterB]))
+                outputStr += ("Take a short break for {} minutes! (You've earned it!)".format(tempList[counterB])) + "\n"
             counterA += 2
             counterB += 2
+    if teacher3 is None:
+        createbtn.pack_forget()
+        reloadbtn.pack_forget()
 
+        timetableframe2 = Frame(timetableframe)
+        timetableframe2.pack(fill=Y, padx=10, pady=10, ipadx=50)
 
-if timetableLayout == {'Monday': "", 'Tuesday': "", 'Wednesday': "", 'Thursday': "", 'Friday': "", 'Saturday': "", 'Sunday': ""}:
-    nolabel = Label(timetableframe, text="You have not created a schedule")
-    nolabel.pack()
-    createbtn = Button(timetableframe, text="Create Schedule", command=lambda: createTimetable())
-    createbtn.pack()
-    reloadbtn = Button(timetableframe, text="Reload Schedule", command=reloadTimetable)
-    reloadbtn.pack()
-else:
-    label1 = Label(timetableframe, text="Timetable")
-    label1.pack()
+        canvasInTheTimetable = Canvas(timetableframe2)
+        canvasInTheTimetable.pack(side=LEFT, fill=BOTH, expand=1)
+
+        scrollbarInTheCanvasInTheTimetable = ttk.Scrollbar(timetableframe2, orient=VERTICAL, command=canvasInTheTimetable.yview)
+        scrollbarInTheCanvasInTheTimetable.pack(side=RIGHT, fill=Y)
+
+        canvasInTheTimetable.configure(yscrollcommand=scrollbarInTheCanvasInTheTimetable.set)
+        canvasInTheTimetable.bind('<Configure>', lambda e: canvasInTheTimetable.configure(scrollregion=canvasInTheTimetable.bbox("all")))
+
+        frameInTheCanvasInTheTimetable = Frame(canvasInTheTimetable)
+
+        canvasInTheTimetable.create_window((0, 0), window=frameInTheCanvasInTheTimetable, anchor=NW)
+
+        Label(frameInTheCanvasInTheTimetable, text=outputStr, anchor="w", justify=LEFT).pack()
+
+        createbtn.pack()
+        reloadbtn.pack()
+    else:
+        top = Toplevel()
+        top.title(teacher3 + "\'s schedule")
+
+        timetableframe3 = Frame(top)
+        timetableframe3.pack(fill=Y, padx=10, pady=10,ipadx=50)
+
+        canvasInTheTimetable2 = Canvas(timetableframe3)
+        canvasInTheTimetable2.pack(side=LEFT, fill=BOTH, expand=1)
+
+        scrollbarInTheCanvasInTheTimetable2 = ttk.Scrollbar(timetableframe3, orient=VERTICAL,
+                                                           command=canvasInTheTimetable2.yview)
+        scrollbarInTheCanvasInTheTimetable2.pack(side=RIGHT, fill=Y)
+
+        canvasInTheTimetable2.configure(yscrollcommand=scrollbarInTheCanvasInTheTimetable2.set)
+        canvasInTheTimetable2.bind('<Configure>', lambda e: canvasInTheTimetable2.configure(scrollregion=canvasInTheTimetable2.bbox("all")))
+
+        frameInTheCanvasInTheTimetable2 = Frame(canvasInTheTimetable2)
+
+        canvasInTheTimetable2.create_window((0, 0), window=frameInTheCanvasInTheTimetable2, anchor=NW)
+
+        Label(frameInTheCanvasInTheTimetable2, text=outputStr, anchor="w", justify=LEFT).pack()
 
 
 signed_in = False
@@ -108,15 +194,26 @@ def sendToDatabase(message_text, teacher2):
     global current_frame
     if message_text == "":
         return
-    ref2 = db.reference(path)
-    data = {"sender": username, "recipient": teacher2, "message_text": message_text, "time": datetime.now().strftime("%H:%M:%S")}
-    ref2.push(data)
-    ref3 = db.reference("/" + teacher2 + "/messages/")
-    ref3.push(data)
-    wlist = current_frame.winfo_children()
-    for i in wlist:
-        i.destroy()
-    generateFrame(teacher2)
+    elif message_text == "/schedule":
+        theirSchedule = db.reference("/" + teacher2 + "/schedule/").get()
+        if theirSchedule is not None:
+            timetableLayouttemp = db.reference("/" + teacher2 + "/schedule/").get()
+            x = {}
+            for i in timetableLayouttemp:
+                x = {**x, **(db.reference("/" + teacher2 + "/schedule/" + i + "/").get())}
+            outputTimetable(x,teacher2)
+        else:
+            top = Toplevel()
+            Label(top, text=teacher2 + " does not have a schedule yet!").pack()
+    else:
+        ref2 = db.reference(path)
+        data = {"sender": username, "recipient": teacher2, "message_text": message_text, "time": datetime.now().strftime("%H:%M:%S")}
+        ref2.push(data)
+        ref3 = db.reference("/" + teacher2 + "/messages/")
+        ref3.push(data)
+        for i in current_frame.winfo_children():
+            i.destroy()
+        generateFrame(teacher2)
 
 
 clickedbeforearray = []
@@ -144,19 +241,20 @@ def generateFrame(teacher):
     teacher_messages = []
 
     label_array = []
-    for i in db.reference(path).get():
-        if db.reference(path + i).get()['recipient'] == teacher or db.reference(path + i).get()['sender'] == teacher:
-            teacher_messages.append(db.reference(path+i).get())
-    if teacher_messages is not None:
-        for i in teacher_messages:
-            if i['sender'] == username:
-                j = Label(current_frame, text="{} sent {} at {}".format(i['sender'], i['message_text'], i['time']), justify=LEFT,width=50, anchor="s")
-                label_array.append(j)
-                j.grid(row=teacher_messages.index(i), column=0,sticky=S)
-            else:
-                j = Label(current_frame, text="{} sent {} at {}".format(i['sender'], i['message_text'], i['time']), justify=RIGHT,width=50, anchor="w")
-                label_array.append(j)
-                j.grid(row=teacher_messages.index(i), column=1,sticky=W)
+    if db.reference(path).get() != None:
+        for i in db.reference(path).get():
+            if db.reference(path + i).get()['recipient'] == teacher or db.reference(path + i).get()['sender'] == teacher:
+                teacher_messages.append(db.reference(path+i).get())
+        if teacher_messages is not None:
+            for i in teacher_messages:
+                if i['sender'] == username:
+                    j = Label(current_frame, text="{} sent {} at {}".format(i['sender'], i['message_text'], i['time']), justify=LEFT,width=50, anchor="e")
+                    label_array.append(j)
+                    j.grid(row=teacher_messages.index(i), column=1, sticky=E)
+                else:
+                    j = Label(current_frame, text="{} sent {} at {}".format(i['sender'], i['message_text'], i['time']), justify=RIGHT,width=50, anchor="w")
+                    label_array.append(j)
+                    j.grid(row=teacher_messages.index(i), column=0, sticky=W)
     send_message_text_field = Entry(current_frame, width=100)
     send_message_text_field.grid(row=len(teacher_messages), column=0, columnspan=2, sticky="SE")
     send_button = Button(current_frame, image=send_img, command=lambda i=i: sendToDatabase(send_message_text_field.get(), teacher))
@@ -174,6 +272,8 @@ def justCheckidrc(teacher3, previous=None):
     else:
         if previous != db.reference(username + "/messages/").get():
             previous = db.reference(username + "/messages/").get()
+            for i in current_frame.winfo_children():
+                i.destroy()
             generateFrame(teacher3)
     time.sleep(5)
     justCheckidrc(teacher3, previous)
@@ -235,7 +335,7 @@ def continueOn():
                     teacher_array.append(message['recipient'])
                     button_dict_array_for_teachers.append({"name": message['recipient'], "messages": message['message_text'], "button": Button(frameInTheCanvasInTheContacts, text=message['recipient'], height=5, width=20, command=lambda teacher=message['recipient']: generateFrame(teacher)), "teacherframe": Frame(chatframe)})
     for i in button_dict_array_for_teachers:
-        i['button'].pack(padx=10, pady=5)
+        i['button'].pack(padx=10, pady=5, ipadx=50)
 
     global createNewContactButton
     createNewContactButton = Button(frameInTheCanvasInTheContacts, text="Talk to new contact", command=lambda: createnewcontact(frameInTheCanvasInTheContacts))
@@ -256,7 +356,7 @@ def createnewcontact(frame):
         button_dict_array_for_teachers.append({"name": e.get().split(": ")[-1], "messages": "", "button": Button(frame, text=e.get().split(": ")[-1], height=5, width=20, command=lambda teacher=e.get().split(": ")[-1]: generateFrame(teacher)), "teacherframe": Frame(chatframe)})
         button_dict_array_for_teachers[-1]["button"].pack()
         createNewContactButton.pack_forget()
-        createNewContactButton.pack(padx=10,pady=5)
+        createNewContactButton.pack(padx=10, pady=5)
         top.destroy()
 
     submitButton = Button(top, text="Submit Contact Name", command=submitContact)
@@ -265,6 +365,7 @@ def createnewcontact(frame):
 
 def check(username2, password2):
     global ref
+    global signed_in
     global path
     global username
     ref = db.reference("/passwords/")
