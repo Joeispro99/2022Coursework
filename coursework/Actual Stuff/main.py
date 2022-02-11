@@ -1,5 +1,4 @@
 # This is a sample Python script.
-import random
 from tkinter import *
 from tkinter import ttk
 from timetable import createTimetable, timetableLayout
@@ -48,10 +47,82 @@ threading.Thread(target=tip_loop).start()
 tiplabel = Label(timetableframe, textvariable=tip)
 tiplabel.pack(anchor=S+E, side=BOTTOM)
 
+
+def faq():
+    top = Toplevel()
+    top.title("FAQ")
+    faqframe = Frame(top)
+    faqframe.pack(fill=BOTH, expand=1, padx=10, pady=10, ipadx=50)
+
+    canvasInTheFAQFrame = Canvas(faqframe)
+    canvasInTheFAQFrame.pack(side=LEFT, fill=BOTH, expand=1)
+
+    scrollbarInTheCanvasInTheFAQFrame = ttk.Scrollbar(faqframe, orient=VERTICAL,
+                                                           command=canvasInTheFAQFrame.yview)
+    scrollbarInTheCanvasInTheFAQFrame.pack(side=RIGHT, fill=Y)
+
+    canvasInTheFAQFrame.configure(yscrollcommand=scrollbarInTheCanvasInTheFAQFrame.set)
+    canvasInTheFAQFrame.bind('<Configure>', lambda e: canvasInTheFAQFrame.configure(
+        scrollregion=canvasInTheFAQFrame.bbox("all")))
+
+    frameInTheCanvasInTheFAQFrame = Frame(canvasInTheFAQFrame)
+
+    canvasInTheFAQFrame.create_window((0, 0), window=frameInTheCanvasInTheFAQFrame, anchor=NW)
+
+    faqtext = '''
+    Frequently Asked Questions (FAQ):
+    
+    How do I create a schedule?
+    Click on the Create Schedule Button, then
+    select the amount of subjects, then the 
+    names of the subjects, then the priority
+    of the subjects, and lastly, the free time
+    you are willing to dedicate to studying!
+    
+    What does the "Reload Schedule" Button do?
+    After creating a schedule, you can then 
+    reload the schedule to display it. If you
+    have signed up for an account in the 
+    "Chat With Teachers" tab, the "Reload 
+    Schedule" button will load your previous
+    schedule that you have saved with the 
+    "Reload Schedule" button.
+    It also can save a new schedule to replace
+    your existing one.
+    
+    How do I create an account?
+    Go to the "Chat With Teachers" tab.
+    Create an account by providing a new
+    username and a password. After clicking
+    on the "Sign In" button, your account
+    has been created and re-sign in with
+    your account.
+    
+    How do I contact my teacher?
+    After Signing In, click on "Create Contact"
+    button. Input the username of your teacher
+    and submit the contact. When you click
+    on the button with your teacher's name on
+    it, you will be able to load the messages
+    and send them to your teachers.
+    
+    What can I do with an account?
+    You can save schedules that you create.
+    You can load schedules that you save.
+    You can contact your teachers.
+    
+    '''
+
+    Label(frameInTheCanvasInTheFAQFrame, text=faqtext, justify=LEFT).pack()
+
+
+faqbutton = Button(timetableframe, text="?", command=faq)
+faqbutton.pack(anchor="ne", side=TOP)
 nolabel = Label(timetableframe, text="You have not created a schedule")
 nolabel.pack()
 createbtn = Button(timetableframe, text="Create Schedule", command=lambda: createTimetable())
 createbtn.pack()
+
 
 def reloadTimetable():
     global timetableLayout
@@ -102,13 +173,14 @@ def reloadTimetable():
                 db.reference("/" + username + "/schedule/")
                 db.set(timetableLayout)
             else:
-                setandTipLabel = Label(timetableframe, text="Timetable set!\nPro tip: create an account in Chat with Teachers to save your timetable!")
+                setandTipLabel = Label(timetableframe, text="Timetable set!\n\nPro tip: create an account in Chat with Teachers to save your timetable!")
                 setandTipLabel.pack()
                 # threading.Thread(target=lambda: hide(setandTipLabel, 3)).start()
 
 
 reloadbtn = Button(timetableframe, text="Reload Schedule", command=lambda: reloadTimetable())
 reloadbtn.pack()
+
 
 def outputTimetable(ttb, teacher3=None):
     outputStr = ""
@@ -182,6 +254,10 @@ send_img = ImageTk.PhotoImage((Image.open("60525.png")).resize((20, 20)))
 
 path = "/"
 ref = db.reference("/")
+'''
+for i in range(100):
+    db.reference("/test/messages/").push({"sender": "test", "recipient": "joe", "message_text": "test", "time": "00:00:00"})
+'''
 
 
 def hide(widget, seconds):
@@ -217,6 +293,7 @@ def sendToDatabase(message_text, teacher2):
 
 
 clickedbeforearray = []
+threads_array = []
 
 
 def generateFrame(teacher):
@@ -227,6 +304,7 @@ def generateFrame(teacher):
 
     global current_frame
     global button_dict_array_for_teachers
+    global stop_threads
     if current_frame is not None:
         current_frame.pack_forget()
         for i in button_dict_array_for_teachers:
@@ -241,6 +319,23 @@ def generateFrame(teacher):
     teacher_messages = []
 
     label_array = []
+    current_frame2 = Frame(current_frame)
+    current_frame2.pack(fill=BOTH, expand=1, padx=10, pady=10, ipadx=50)
+
+    canvasInTheCurrentFrame2 = Canvas(current_frame2)
+    canvasInTheCurrentFrame2.pack(side=LEFT, fill=BOTH, expand=1)
+
+    scrollbarInTheCanvasInTheCurrentFrame2 = ttk.Scrollbar(current_frame2, orient=VERTICAL,
+                                                        command=canvasInTheCurrentFrame2.yview)
+    scrollbarInTheCanvasInTheCurrentFrame2.pack(side=RIGHT, fill=Y)
+
+    canvasInTheCurrentFrame2.configure(yscrollcommand=scrollbarInTheCanvasInTheCurrentFrame2.set)
+    canvasInTheCurrentFrame2.bind('<Configure>', lambda e: canvasInTheCurrentFrame2.configure(scrollregion=canvasInTheCurrentFrame2.bbox("all")))
+
+    frameInTheCanvasInTheCurrentFrame = Frame(canvasInTheCurrentFrame2)
+
+    canvasInTheCurrentFrame2.create_window((0, 0), window=frameInTheCanvasInTheCurrentFrame, anchor=NW)
+
     if db.reference(path).get() != None:
         for i in db.reference(path).get():
             if db.reference(path + i).get()['recipient'] == teacher or db.reference(path + i).get()['sender'] == teacher:
@@ -248,42 +343,73 @@ def generateFrame(teacher):
         if teacher_messages is not None:
             for i in teacher_messages:
                 if i['sender'] == username:
-                    j = Label(current_frame, text="{} sent {} at {}".format(i['sender'], i['message_text'], i['time']), justify=LEFT,width=50, anchor="e")
+                    j = Label(frameInTheCanvasInTheCurrentFrame, text="{} sent {} at {}".format(i['sender'], i['message_text'], i['time']), justify=LEFT,width=50, anchor="e")
                     label_array.append(j)
                     j.grid(row=teacher_messages.index(i), column=1, sticky=E)
                 else:
-                    j = Label(current_frame, text="{} sent {} at {}".format(i['sender'], i['message_text'], i['time']), justify=RIGHT,width=50, anchor="w")
+                    j = Label(frameInTheCanvasInTheCurrentFrame, text="{} sent {} at {}".format(i['sender'], i['message_text'], i['time']), justify=RIGHT,width=50, anchor="w")
                     label_array.append(j)
                     j.grid(row=teacher_messages.index(i), column=0, sticky=W)
-    send_message_text_field = Entry(current_frame, width=100)
+    send_message_text_field = Entry(frameInTheCanvasInTheCurrentFrame, width=100)
     send_message_text_field.grid(row=len(teacher_messages), column=0, columnspan=2, sticky="SE")
-    send_button = Button(current_frame, image=send_img, command=lambda i=i: sendToDatabase(send_message_text_field.get(), teacher))
-    send_button.grid(row=len(teacher_messages), column=2)
+    send_button = Button(frameInTheCanvasInTheCurrentFrame, image=send_img, command=lambda i=i: sendToDatabase(send_message_text_field.get(), teacher))
+    send_button.grid(row=len(teacher_messages), column=2, sticky="s")
+    frameInTheCanvasInTheCurrentFrame.pack()
     current_frame.pack(expand=1, fill=BOTH, side=BOTTOM)
     # current_frame.grid(row=0,column=0)
     if teacher not in clickedbeforearray:
-        threading.Thread(target=lambda teacher2=teacher: justCheckidrc(teacher2)).start()
+        stop_threads = False
+        threading.Thread(target=lambda teacher2=teacher: justCheckidrc(teacher2, lambda: stop_threads)).start()
         clickedbeforearray.append(teacher)
 
 
-def justCheckidrc(teacher3, previous=None):
-    if previous is None:
-        previous = db.reference(username + "/messages/").get()
-    else:
-        if previous != db.reference(username + "/messages/").get():
+previous = None
+
+
+def justCheckidrc(teacher3, stop):
+    global previous
+    print(stop())
+    while True:
+        if stop():
+            break
+        if previous is None:
             previous = db.reference(username + "/messages/").get()
-            for i in current_frame.winfo_children():
-                i.destroy()
-            generateFrame(teacher3)
-    time.sleep(5)
-    justCheckidrc(teacher3, previous)
+        else:
+            if previous != db.reference(username + "/messages/").get():
+                previous = db.reference(username + "/messages/").get()
+                for i in current_frame.winfo_children():
+                    i.destroy()
+                generateFrame(teacher3)
+        time.sleep(5)
+
+
+def logout(memyselfandi):
+    global contactsFrame
+    global current_frame
+    global signed_in
+    global username
+    global clickedbeforearray
+    global stop_threads
+    stop_threads = True
+    print(stop_threads)
+    username = ""
+    signed_in = False
+    clickedbeforearray = []
+    if current_frame is not None:
+        current_frame.pack_forget()
+    contactsFrame.pack_forget()
+    memyselfandi.pack_forget()
+    startChat()
 
 
 def continueOn():
+    global contactsFrame
     global ref
     global button_dict_array_for_teachers
     button_dict_array_for_teachers = []
     submit_button.destroy()
+    log_out_btn = Button(chatframe, text="Log Out", command=lambda: logout(log_out_btn))
+    log_out_btn.pack(anchor = "w", side = "bottom", padx=10, pady=10)
     contactsFrame = Frame(chatframe)
     contactsFrame.pack(side=LEFT, fill=Y, ipadx=50)
 
@@ -335,7 +461,7 @@ def continueOn():
                     teacher_array.append(message['recipient'])
                     button_dict_array_for_teachers.append({"name": message['recipient'], "messages": message['message_text'], "button": Button(frameInTheCanvasInTheContacts, text=message['recipient'], height=5, width=20, command=lambda teacher=message['recipient']: generateFrame(teacher)), "teacherframe": Frame(chatframe)})
     for i in button_dict_array_for_teachers:
-        i['button'].pack(padx=10, pady=5, ipadx=50)
+        i['button'].pack(padx=10, pady=5, ipadx=90)
 
     global createNewContactButton
     createNewContactButton = Button(frameInTheCanvasInTheContacts, text="Talk to new contact", command=lambda: createnewcontact(frameInTheCanvasInTheContacts))
@@ -354,7 +480,7 @@ def createnewcontact(frame):
 
     def submitContact():
         button_dict_array_for_teachers.append({"name": e.get().split(": ")[-1], "messages": "", "button": Button(frame, text=e.get().split(": ")[-1], height=5, width=20, command=lambda teacher=e.get().split(": ")[-1]: generateFrame(teacher)), "teacherframe": Frame(chatframe)})
-        button_dict_array_for_teachers[-1]["button"].pack()
+        button_dict_array_for_teachers[-1]["button"].pack(padx=10, pady=5, ipadx=90)
         createNewContactButton.pack_forget()
         createNewContactButton.pack(padx=10, pady=5)
         top.destroy()
@@ -411,6 +537,7 @@ def check(username2, password2):
 
 
 def startChat():
+    global signed_in
     '''
     ref = db.reference("test/messages/")
     ref.push({"sender": "Mr Johari", "recipient": "test", "message_text": "Hey Test!", "time": "00:00:01"})

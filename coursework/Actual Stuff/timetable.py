@@ -26,6 +26,11 @@ dictionaryOfStudyTimeEveryDayInMinutes = {'Monday': 60, 'Tuesday': 50, 'Wednesda
 # Monday spends 41 min on Computing and 19 min on Chemistry
 # Tuesday spends 22 min of Chemistry and 28 min of English
 
+
+def hide(widget, seconds):
+    time.sleep(seconds)
+    widget.pack_forget()
+
 def timeRounder(studyHours):
     studyHoursList = []
     breakTime = 0
@@ -101,6 +106,7 @@ def applyItAll(dictionaryOfSubjectsAndPriority, dictionaryOfStudyTimeEveryDayInM
     # dark mode
     prioritySort = [""] * len(dictionaryOfSubjectsAndPriority)
     maxPriority = minPriority = 0
+    print(dictionaryOfSubjectsAndPriority)
     for i in dictionaryOfSubjectsAndPriority:
         prioritySort[dictionaryOfSubjectsAndPriority[i] - 1] = i
     prioritySort = prioritySort[::-1]
@@ -195,27 +201,62 @@ def createTimetable():
                 e.pack()
 
             def submitSubjectsAndPriority():
-                sliderLabel2.pack_forget()
                 dictOfSubjectsAndPriority = {}
 
-                sliderLabel3 = Label(top, text="Use the label to enter the priority of the subjects!\n\nThe priority should be an integer,\n the higher the priority, the more sessions given for that subject.\n\nExample: English: 1, Chinese: 2\nChinese has more priority and more time is allocated for Chinese")
-                sliderLabel3.pack()
-
-                for i in text_field_array:
-                    dictOfSubjectsAndPriority[(i.get().split(":")[-1][1:])] = ""
                 for i in text_field_array:
                     j = i.get().split(":")[-1][1:]
+                    if j == "":
+                        blankLabel = Label(top, text="User gave blank values!")
+                        blankLabel.pack()
+                        threading.Thread(target=lambda: hide(blankLabel, 3)).start()
+                        return
+
+                for i in text_field_array:
+                    j = i.get().split(":")[-1][1:]
+                    dictOfSubjectsAndPriority[j] = ""
                     i.delete(0, 'end')
                     i.insert(0, "Enter Priority for Subject " + j + ": ")
+
+                sliderLabel2.pack_forget()
+
+                sliderLabel3 = Label(top, text="Use the label to enter the priority of the subjects!\n\nThe priority should be an integer,\n the higher the priority, the more sessions given for that subject.\n\nExample: English: 1, Chinese: 2\nChinese has more priority and more time is allocated for Chinese", justify=LEFT)
+                sliderLabel3.pack()
+
+
                 submitButton2.pack_forget()
 
                 def submitSubjectsAndPriorityAgain():
+                    inorder = []
+                    for i in text_field_array:
+                        j = i.get().split(":")[-1][1:]
+                        if j == "":
+                            blankLabel = Label(top, text="User gave blank values!")
+                            blankLabel.pack()
+                            threading.Thread(target=lambda: hide(blankLabel, 3)).start()
+                            return
+                        elif not j.isnumeric():
+                            notNumLabel = Label(top, text="User gave non-numeric values!")
+                            notNumLabel.pack()
+                            threading.Thread(target=lambda: hide(notNumLabel, 3)).start()
+                            return
+                        else:
+                            inorder.append(int(j))
+                    for i in range(1,len(inorder)+1):
+                        if i not in inorder:
+                            notOrderLabel = Label(top, text="User gave priorities that are not in order!")
+                            notOrderLabel.pack()
+                            threading.Thread(target=lambda: hide(notOrderLabel, 3)).start()
+                            return
+
                     sliderLabel3.pack_forget()
                     for j in dictOfSubjectsAndPriority:
                         dictOfSubjectsAndPriority[j] = int((text_field_array[list(dictOfSubjectsAndPriority.keys()).index(j)].get().split(":")[-1][1:]))
                     submitButton3.pack_forget()
                     for i in text_field_array:
                         i.pack_forget()
+
+                    infoLabel = Label(top, text="Set the amount of time you are willing to\ndedicate every day to studying.\nAsian Mode: No breaks given, exact time set for each subject.", justify=LEFT)
+                    infoLabel.pack()
 
                     dayArray = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
                     textFieldArray = []
@@ -232,6 +273,20 @@ def createTimetable():
 
                     def TimeEveryDay():
                         #studyTimePerSession = studyTextField.get()
+
+                        for i in textFieldArray:
+                            j = i.get().split(":")[-1][1:]
+                            if j == "":
+                                blankLabel = Label(top, text="User gave blank values!")
+                                blankLabel.pack()
+                                threading.Thread(target=lambda: hide(blankLabel, 3)).start()
+                                return
+                            elif not j.isnumeric():
+                                notNumLabel = Label(top, text="User gave non-numeric values!")
+                                notNumLabel.pack()
+                                threading.Thread(target=lambda: hide(notNumLabel, 3)).start()
+                                return
+                        infoLabel.pack_forget()
                         dictOfStudyTimeEveryDayInMinutes = {'Monday': 0, 'Tuesday': 0, 'Wednesday': 0, 'Thursday': 0, 'Friday': 0, 'Saturday': 0, 'Sunday': 0}
                         asianValue = asianValueAsAnInt.get() == 1
                         for i in range(len(textFieldArray)):
@@ -258,6 +313,7 @@ def createTimetable():
 def returnToHome():
     byeLabel = Label(top, text="This window will be closed in 3")
     byeLabel.pack()
+
     def slowlyDisappear():
         for i in range(1,5):
             byeLabel.config(text="This window will be closed in " + str(4-i))
