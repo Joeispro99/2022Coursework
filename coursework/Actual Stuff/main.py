@@ -13,7 +13,7 @@ from datetime import datetime
 
 cred_obj = firebase_admin.credentials.Certificate('courseworkchat-6e52c-firebase-adminsdk-q3nbz-f8e72a513c.json')
 default_app = firebase_admin.initialize_app(cred_obj, {
-    'databaseURL': 'https://courseworkchat-6e52c-default-rtdb.firebaseio.com/'
+    'databaseURL': 'hee hee haw haw'
 })
 
 root = Tk()
